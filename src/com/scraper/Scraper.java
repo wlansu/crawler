@@ -1,4 +1,4 @@
-package com.crawler;
+package com.scraper;
 
 import java.io.IOException;
 import java.util.*;
@@ -10,15 +10,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 
-/**
- * Main class for the crawler app.
- *
- * <p>
- *     Crawl a url and further crawl all urls found on that page to detect the most used words.
- *     These words are added to a HashMap so we can see what words are used on each url.
- * </p>
- */
-class Crawler {
+class Scraper {
 
     /**
      * Crawl a url and return the words used and their count for the url and the urls on the initial page.
@@ -30,15 +22,16 @@ class Crawler {
     void crawl(String startingUrl) {
         Map<String, Map<String, Integer>> wordsUsed = new HashMap<>();
         ArrayList<String> visited = new ArrayList<>();
-        Scraper scraper = new Scraper();
         long start = System.currentTimeMillis();
-        ArrayList<Element> toVisit = scraper.scrapeURL(startingUrl);
+        ArrayList<Element> toVisit = this.scrapeURL(startingUrl);
+        visited.add(startingUrl);
+        wordsUsed.put(startingUrl, this.scrapeWords(startingUrl));
         for (Element url : toVisit) {
             String href = url.absUrl("href");
             if ((System.currentTimeMillis() - start) < 60000) {
                 if (!visited.contains(href)) {
                     visited.add(href);
-                    wordsUsed.put(href, scraper.scrapeWords(href));
+                    wordsUsed.put(href, this.scrapeWords(href));
                 }
             } else {
                 break;
@@ -55,10 +48,6 @@ class Crawler {
             "Crawled %s urls in %s seconds", wordsUsed.size(), sec
         );
     }
-}
-
-
-class Scraper {
 
     /**
      * Get the document from a url and return it.
@@ -88,7 +77,7 @@ class Scraper {
      * @param url The url to scrape.
      * @return The list of urls on the page.
      */
-    ArrayList<Element> scrapeURL(String url) {
+    private ArrayList<Element> scrapeURL(String url) {
 
         Document htmlDocument = this.getDocument(url);
         if (htmlDocument != null) {
@@ -106,25 +95,71 @@ class Scraper {
      * @param url The url to scrape.
      * @return HashMap of all words used on a url along with their count.
      */
-    Map<String, Integer> scrapeWords(String url) {
+    private Map<String, Integer> scrapeWords(String url) {
 
         Map<String, Integer> countMap = new HashMap<>();
         Document htmlDocument = this.getDocument(url);
         if (htmlDocument != null) {
             String text = htmlDocument.body().text();
             String[] words = text
-                    .replaceAll("\\r\\n. |\\r. |\\n", " ")
-                    .split("(?<!\\S)\\p{L}+(?!\\S)");  // TODO: regex needs tuning.
+                    .split(" ");  // TODO: regex needs tuning, depending on what we want.
             for (String word : words) {
-                if (countMap.containsKey(word)) {
-                    countMap.replace(word, countMap.get(word) + 1);  // TODO: there is probably a better way to do this.
-                } else {
-                    countMap.put(word, 1);
+                if (word != null && !word.isEmpty()) {
+                    // TODO: there is probably a better way to do this.
+                    if (countMap.containsKey(word)) {
+                        countMap.replace(word, countMap.get(word) + 1);
+                    } else {
+                        countMap.put(word, 1);
+                    }
                 }
             }
-            return countMap;
+            return sortByValue(countMap);
         } else {
             return null;
         }
+    }
+
+    /**
+     * Sort a Map by value instead of by key.
+     *
+     * @param unsortedMap The map to be sorted.
+     * @return The sorted map.
+     */
+    private static Map sortByValue(Map unsortedMap) {
+        Map sortedMap = new TreeMap(new ValueComparator(unsortedMap));
+        sortedMap.putAll(unsortedMap);
+        return sortedMap;
+    }
+}
+
+
+/**
+ * Compare the value of a Map instead of the key.
+ */
+class ValueComparator implements Comparator {
+
+    private Map map;
+
+    /**
+     * Set the map for the class.
+     *
+     * @param map a Map.
+     */
+    ValueComparator(Map map) {
+        this.map = map;
+    }
+
+    /**
+     * Compare a value with another value.
+     *
+     * @param keyA First value to compare.
+     * @param keyB Second value to compare.
+     * @return a negative integer, zero, or a positive integer as this object
+     *  is less than, equal to, or greater than the specified object.
+     */
+    public int compare(Object keyA, Object keyB) {
+        Comparable valueA = (Comparable) map.get(keyA);
+        Comparable valueB = (Comparable) map.get(keyB);
+        return valueB.compareTo(valueA);
     }
 }

@@ -1,7 +1,7 @@
-package com.crawler;
+package com.scraper;
 
 /**
- * Main entry point for the crawler app.
+ * Main entry point for the scraper app.
  */
 public class Main {
 
@@ -14,7 +14,7 @@ public class Main {
      * @param args No args needed, we could add the url as one.
      */
     public static void main(String[] args) {
-        Crawler crawler = new Crawler();
-        crawler.crawl("https://en.wikipedia.org/wiki/Big_data");
+        Scraper scraper = new Scraper();
+        scraper.crawl("https://en.wikipedia.org/wiki/Big_data");
     }
 }
