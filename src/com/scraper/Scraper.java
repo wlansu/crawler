@@ -17,10 +17,6 @@ class Scraper {
 
     /**
      * Crawl a url and return the words used and their count for the url and the urls on the initial page.
-     *
-     * <p>
-     *     Call the Scraper class to do most of the work and then print out the results of the crawl.
-     * </p>
      */
     void crawl(String startingUrl) {
 
@@ -120,6 +116,7 @@ class Scraper {
                     }
                 }
             }
+            // If we only want the most frequently used words we'd have to slice the Map, passing the value in.
             return sortByValue(countMap);
         } else {
             return null;
