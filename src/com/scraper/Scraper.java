@@ -12,6 +12,9 @@ import org.jsoup.select.Elements;
 
 class Scraper {
 
+    private Map<String, Map<String, Integer>> wordsUsed = new HashMap<>();
+    private ArrayList<String> visited = new ArrayList<>();
+
     /**
      * Crawl a url and return the words used and their count for the url and the urls on the initial page.
      *
@@ -20,21 +23,25 @@ class Scraper {
      * </p>
      */
     void crawl(String startingUrl) {
-        Map<String, Map<String, Integer>> wordsUsed = new HashMap<>();
-        ArrayList<String> visited = new ArrayList<>();
+
         long start = System.currentTimeMillis();
         ArrayList<Element> toVisit = this.scrapeURL(startingUrl);
+
+        // Add the startingUrl as well since we won't be scraping it in the loop.
         visited.add(startingUrl);
         wordsUsed.put(startingUrl, this.scrapeWords(startingUrl));
-        for (Element url : toVisit) {
-            String href = url.absUrl("href");
-            if ((System.currentTimeMillis() - start) < 60000) {
-                if (!visited.contains(href)) {
-                    visited.add(href);
-                    wordsUsed.put(href, this.scrapeWords(href));
+
+        if (toVisit != null) {
+            for (Element url : toVisit) {
+                String href = url.absUrl("href");
+                if ((System.currentTimeMillis() - start) < 60000) {
+                    if (!visited.contains(href)) {
+                        visited.add(href);
+                        wordsUsed.put(href, this.scrapeWords(href));
+                    }
+                } else {
+                    break;
                 }
-            } else {
-                break;
             }
         }
         for (Object url : wordsUsed.entrySet()) {
