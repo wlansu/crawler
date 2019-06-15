@@ -1,8 +1,8 @@
-# Crawler
-Example webcrawler for code assessment.
+# Scraper
+Example webscraper for code assessment.
 
 # What it does
-The crawler fetches all urls from "https://en.wikipedia.org/wiki/Big_data" and parses them to find the 
+The scraper fetches all urls from "https://en.wikipedia.org/wiki/Big_data" and parses them to find the 
 most frequently used words. These are then printed to the terminal.
 
 # Caveats
